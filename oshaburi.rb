@@ -7,9 +7,17 @@ Plugin.create(:oshaburi) do
     timeline :oshaburi_test
   end
 
-  message = Plugin::Oshaburi::Message.new(description: 'hello, World!', created: Time.now, user: Plugin::Oshaburi::User.instance)
-
   Delayer.new do
-    timeline(:oshaburi_test) << message
+    File.open(File.join(__dir__, 'test.oshaburi')) do |istream|
+      timeline(:oshaburi_test) << istream.map do |json_str|
+        Plugin::Oshaburi::Message.new(
+          JSON.parse(
+            json_str,
+            symbolize_names: true
+          )
+        )
+      end
+    end
   end
 end
+
